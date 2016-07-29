@@ -1,0 +1,874 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+import org.apache.tools.ant.filters.ReplaceTokens
+
+/* ========================================================
+ * Project setup
+ * ======================================================== */
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+apply from: 'common.gradle'
+
+// java settings
+def jvmArguments = ['-Xms128M', '-Xmx1024M']
+ext.ofbizMainClass = 'org.apache.ofbiz.base.start.Start'
+javadoc.failOnError = false
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+// root and subproject settings
+defaultTasks 'build'
+
+allprojects {
+    repositories{
+        jcenter()
+    }
+}
+
+subprojects {
+    configurations {
+        // compile-time plugin libraries
+        pluginLibsCompile
+        // runtime plugin libraries
+        pluginLibsRuntime
+    }
+}
+
+configurations {
+    junitLibs
+}
+
+dependencies {
+    // general framework compile libs
+    compile 'apache-xerces:resolver:2.9.1'
+    compile 'apache-xerces:xercesImpl:2.9.1'
+    compile 'avalon-framework:avalon-framework-impl:4.2.0'
+    compile 'bouncycastle:bouncycastle-jce-jdk13:112'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.4.0'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.4.2'
+    compile 'com.google.guava:guava:19.0'
+    compile 'com.google.zxing:core:3.2.1'
+    compile 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.0'
+    compile 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20160628.1'
+    compile 'com.ibm.icu:icu4j:57.1'
+    compile 'com.lowagie:itext:2.1.7'
+    compile 'com.sun.mail:javax.mail:1.5.1'
+    compile 'com.sun.syndication:com.springsource.com.sun.syndication:0.9.0'
+    compile 'com.thoughtworks.xstream:xstream:1.4.9'
+    compile 'commons-beanutils:commons-beanutils-core:1.8.3'
+    compile 'commons-cli:commons-cli:1.3.1'
+    compile 'commons-codec:commons-codec:1.10'
+    compile 'commons-el:commons-el:1.0'
+    compile 'commons-fileupload:commons-fileupload:1.3.1'
+    compile 'commons-io:commons-io:2.4'
+    compile 'commons-logging:commons-logging:1.2'
+    compile 'commons-net:commons-net:3.3'
+    compile 'commons-validator:commons-validator:1.5.1'
+    compile 'de.odysseus.juel:juel-impl:2.2.7'
+    compile 'de.odysseus.juel:juel-spi:2.2.7'
+    compile 'httpunit:httpunit:1.7'
+    compile 'javax.el:javax.el-api:3.0.1-b04'
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
+    compile 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.0'
+    compile 'javolution:javolution:5.4.3'
+    compile 'junit:junit-dep:4.10'
+    compile 'jython:jython:2.1'
+    compile 'net.fortuna.ical4j:ical4j:1.0-rc3-atlassian-11'
+    compile 'net.sf.barcode4j:barcode4j-fop-ext-complete:2.0'
+    compile 'net.sf.dozer:dozer:4.2.1'
+    compile 'net.sf.ezmorph:ezmorph:0.9.1'
+    compile 'net.sourceforge.nekohtml:nekohtml:1.9.16'
+    compile 'org.apache.ant:ant-apache-bsf:1.9.0'
+    compile 'org.apache.ant:ant-junit:1.9.0'
+    compile 'org.apache.ant:ant-launcher:1.9.0'
+    compile 'org.apache.axis2:axis2-adb:1.7.1'
+    compile 'org.apache.axis2:axis2-kernel:1.7.1'
+    compile 'org.apache.axis2:axis2-transport-http:1.7.1'
+    compile 'org.apache.axis2:axis2-transport-local:1.7.1'
+    compile 'org.apache.bsf:com.springsource.org.apache.bsf:2.4.0'
+    compile 'org.apache.commons:commons-collections4:4.1'
+    compile 'org.apache.commons:commons-compress:1.11'
+    compile 'org.apache.commons:commons-csv:1.1'
+    compile 'org.apache.commons:commons-dbcp2:2.1'
+    compile 'org.apache.commons:commons-pool2:2.3'
+    compile 'org.apache.derby:derby:10.11.1.1'
+    compile 'org.apache.geronimo.components:geronimo-transaction:3.1.1'
+    compile 'org.apache.geronimo.specs:geronimo-activation_1.0.2_spec:1.0'
+    compile 'org.apache.geronimo.specs:geronimo-j2ee-connector_1.5_spec:2.0.0'
+    compile 'org.apache.geronimo.specs:geronimo-jaxr_1.0_spec:1.0'
+    compile 'org.apache.geronimo.specs:geronimo-jaxrpc_1.1_spec:1.1'
+    compile 'org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.1.1'
+    compile 'org.apache.geronimo.specs:geronimo-jta_1.1_spec:1.1.1'
+    compile 'org.apache.geronimo.specs:geronimo-saaj_1.3_spec:1.1'
+    compile 'org.apache.httpcomponents:httpclient-cache:4.4.1'
+    compile 'org.apache.httpcomponents:httpcore:4.4.1'
+    compile 'org.apache.logging.log4j:log4j-1.2-api:2.3'
+    compile 'org.apache.logging.log4j:log4j-api:2.3'
+    compile 'org.apache.logging.log4j:log4j-core:2.3'
+    compile 'org.apache.logging.log4j:log4j-nosql:2.3'
+    compile 'org.apache.logging.log4j:log4j-slf4j-impl:2.3'
+    compile 'org.apache.neethi:neethi:3.0.3'
+    compile 'org.apache.pdfbox:fontbox:1.8.11'
+    compile 'org.apache.pdfbox:jempbox:1.8.11'
+    compile 'org.apache.pdfbox:pdfbox:1.8.12'
+    compile 'org.apache.poi:poi:3.14'
+    compile 'org.apache.servicemix.bundles:org.apache.servicemix.bundles.xpp3:1.1.4c_7'
+    compile 'org.apache.shiro:shiro-core:1.2.5'
+    compile 'org.apache.tika:tika-core:1.12'
+    compile 'org.apache.tika:tika-parsers:1.12'
+    compile 'org.apache.tomcat:tomcat-annotations-api:7.0.54'
+    compile 'org.apache.tomcat:tomcat-api:8.0.33'
+    compile 'org.apache.tomcat:tomcat-catalina-ha:8.0.33'
+    compile 'org.apache.tomcat:tomcat-catalina:8.0.33'
+    compile 'org.apache.tomcat:tomcat-coyote:8.0.33'
+    compile 'org.apache.tomcat:tomcat-jasper:8.0.33'
+    compile 'org.apache.tomcat:tomcat-jni:8.0.33'
+    compile 'org.apache.tomcat:tomcat-tribes:8.0.33'
+    compile 'org.apache.tomcat:tomcat-util-scan:8.0.33'
+    compile 'org.apache.tomcat:tomcat-util:8.0.33'
+    compile 'org.apache.tomcat.embed:tomcat-embed-websocket:8.0.33'
+    compile 'org.apache.tomcat.extras:tomcat-extras-juli-adapters:8.0.33'
+    compile 'org.apache.tomcat.extras:tomcat-extras-juli:8.0.33'
+    compile 'org.apache.woden:woden-core:1.0M10'
+    compile 'org.apache.ws.commons.axiom:axiom-api:1.2.17'
+    compile 'org.apache.ws.commons.axiom:axiom-impl:1.2.17'
+    compile 'org.apache.ws.commons.util:ws-commons-util:1.0.2'
+    compile 'org.apache.ws.xmlschema:xmlschema-core:2.2.1'
+    compile 'org.apache.xalan:com.springsource.org.apache.xml.serializer:2.7.1'
+    compile 'org.apache.xmlgraphics:fop:2.1'
+    compile 'org.apache.xmlgraphics:xmlgraphics-commons:2.1'
+    compile 'org.apache.xmlrpc:xmlrpc-client:3.1.2'
+    compile 'org.apache.xmlrpc:xmlrpc-common:3.1.2'
+    compile 'org.apache.xmlrpc:xmlrpc-server:3.1.2'
+    compile 'org.codeartisans.thirdparties.swing:batik-all:1.8pre-r1084380'
+    compile 'org.codehaus.groovy:groovy-all:2.4.5'
+    compile 'org.dom4j:com.springsource.org.dom4j:1.6.1'
+    compile 'org.eclipse.jdt.core.compiler:ecj:4.5'
+    compile 'org.freemarker:freemarker:2.3.24-incubating'
+    compile 'org.hamcrest:hamcrest-all:1.3'
+    compile 'org.jdom:jdom:1.1'
+    compile 'org.lucee:commons-lang:2.6.0'
+    compile 'org.owasp.esapi:esapi:2.1.0'
+    compile 'org.slf4j:slf4j-api:1.6.4'
+    compile 'org.springframework:spring-core:4.2.3.RELEASE'
+    compile 'org.springframework:spring-test:4.2.3.RELEASE'
+    compile 'org.zapodot:jackson-databind-java-optional:2.4.2'
+    compile 'oro:oro:2.0.8'
+    compile 'ws-commons-java5:ws-commons-java5:1.0.1'
+    compile 'wsdl4j:wsdl4j:1.6.2'
+    compile 'xalan:xalan:2.7.2'
+    compile 'xml-apis:xml-apis-ext:1.3.04'
+    compile 'xml-apis:xml-apis:1.4.01'
+
+    // general framework runtime libs
+    runtime 'mysql:mysql-connector-java:5.1.36'
+    runtime 'postgresql:postgresql:9.0-801.jdbc4'
+
+    // plugin libs
+    subprojects.each { subProject ->
+        compile project(path: subProject.path, configuration: 'pluginLibsCompile')
+        runtime project(path: subProject.path, configuration: 'pluginLibsRuntime')
+    }
+
+    // libs needed for junitreport
+    junitLibs 'junit:junit:4.12'
+    junitLibs 'org.apache.ant:ant-junit:1.9.7'
+    junitLibs 'org.apache.ant:ant-junit4:1.9.7'
+
+    // local libs
+    getDirectoryInActiveComponentsIfExists('lib').each { libDir ->
+        compile fileTree(dir: libDir, include: '**/*.jar')
+    }
+    runtime files("${rootDir}/build/libs/ofbiz-base-test.jar")
+}
+
+def excludedJavaSources = []
+excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/cybersource/IcsPaymentServices.java'
+excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/ideal/IdealEvents.java'
+excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/ideal/IdealPaymentServiceTest.java'
+excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/orbital/OrbitalPaymentServices.java'
+excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/paypal/PayPalServices.java'
+excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/securepay/SecurePayPaymentServices.java'
+excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/securepay/SecurePayServiceTest.java'
+excludedJavaSources.add 'org/apache/ofbiz/accounting/thirdparty/verisign/PayflowPro.java'
+excludedJavaSources.add 'org/apache/ofbiz/content/openoffice/OpenOfficeByteArrayInputStream.java'
+excludedJavaSources.add 'org/apache/ofbiz/content/openoffice/OpenOfficeByteArrayOutputStream.java'
+excludedJavaSources.add 'org/apache/ofbiz/content/openoffice/OpenOfficeServices.java'
+excludedJavaSources.add 'org/apache/ofbiz/content/openoffice/OpenOfficeWorker.java'
+excludedJavaSources.add 'org/apache/ofbiz/content/report/JREntityListIteratorDataSource.java'
+excludedJavaSources.add 'org/apache/ofbiz/content/report/JRMapCollectionDataSource.java'
+excludedJavaSources.add 'org/apache/ofbiz/order/thirdparty/taxware/TaxwareException.java'
+excludedJavaSources.add 'org/apache/ofbiz/order/thirdparty/taxware/TaxwareServices.java'
+excludedJavaSources.add 'org/apache/ofbiz/order/thirdparty/taxware/TaxwareUTL.java'
+excludedJavaSources.add 'ShipmentScaleApplet.java'
+excludedJavaSources.add 'org/apache/ofbiz/securityext/thirdparty/truition/TruitionCoReg.java'
+excludedJavaSources.add 'org/apache/ofbiz/webapp/view/JasperReportsJXlsViewHandler.java'
+excludedJavaSources.add 'org/apache/ofbiz/webapp/view/JasperReportsPdfViewHandler.java'
+excludedJavaSources.add 'org/apache/ofbiz/webapp/view/JasperReportsPoiXlsViewHandler.java'
+excludedJavaSources.add 'org/apache/ofbiz/webapp/view/JasperReportsXmlViewHandler.java'
+
+sourceSets {
+    main {
+        java {
+            srcDirs = getDirectoryInActiveComponentsIfExists('src/main/java')
+            exclude excludedJavaSources
+        }
+        resources {
+            srcDirs = getDirectoryInActiveComponentsIfExists('src/main/java')
+            srcDirs += getDirectoryInActiveComponentsIfExists('config')
+            exclude excludedJavaSources
+        }
+    }
+
+    test {
+        java {
+            srcDirs = getDirectoryInActiveComponentsIfExists('src/test/java')
+        }
+        resources {
+            srcDirs = getDirectoryInActiveComponentsIfExists('src/test/java')
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+            "Implementation-Title": project.name,
+            "Main-Class": ofbizMainClass,
+            "Class-Path": getJarManifestClasspathForCurrentOs()
+        )
+    }
+}
+
+// Eclipse plugin settings
+eclipse.classpath.file.whenMerged { classpath ->
+    /* The code inside this block removes unnecessary entries
+     * in the .classpath file which are generated automatically
+     * due to the settings in the sourceSets block
+     */
+    def osName = System.getProperty('os.name').toLowerCase()
+    def osDirSeparator = osName.contains('windows') ? '\\' : '/'
+
+    iterateOverActiveComponents { component ->
+        def componentName = component.toString() - rootDir.toString()
+        classpath.entries.removeAll { entry ->
+            // remove any "src" entries in .classpath of the form /componentName
+            entry.kind == 'src' &&
+            entry.path ==~ '.*/+(' + componentName.tokenize(osDirSeparator).last() + ')$'
+        }
+    }
+    classpath.entries.removeAll { entry ->
+        /* remove "src" entries in .classpath named:
+         *   /framework, /applications, /specialpurpose and /hot-deploy
+         */
+        entry.kind == 'src' &&
+            entry.path ==~ /(\/+framework)$/ ||
+            entry.path ==~ /(\/+applications)$/ ||
+            entry.path ==~ /(\/+specialpurpose)$/ ||
+            entry.path ==~ /(\/+hot-deploy)$/
+    }
+    getDirectoryInActiveComponentsIfExists('config').each { configDir ->
+        /* remove any "src" entries in .classpath of the form componentName/config
+         *
+         * windows format: \framework\base\config
+         * Unix format: /framework/base/config
+         * .classpath format: framework/base/config
+         *
+         * Must convert both windows and unix to .classpath format to
+         * be able to remove it from the file
+         */
+        def relativeDir = configDir.toString() - rootDir.toString() - osDirSeparator
+        def eclipseConfigSrc = osName.contains('windows') ? relativeDir.replaceAll("\\\\", "/") : relativeDir
+        classpath.entries.removeAll { entry ->
+            entry.kind == 'src' &&
+            entry.path == eclipseConfigSrc
+        }
+    }
+}
+tasks.eclipse.dependsOn(cleanEclipse)
+
+/* ========================================================
+ * Tasks
+ * ======================================================== */
+
+// ========== Task group labels ==========
+def cleanupGroup = 'Cleaning'
+def ofbizServer = 'OFBiz Server'
+def sysadminGroup = 'System Administration'
+def committerGroup = 'OFBiz committers'
+
+// ========== OFBiz Server tasks ==========
+
+task loadDefault(group: ofbizServer) {
+    dependsOn 'ofbiz --load-data'
+    description 'Load default data; meant for OFBiz development, testing, and demo purposes'
+}
+
+task testIntegration(group: ofbizServer) {
+    dependsOn 'ofbiz --test'
+    description 'Run OFBiz integration tests; You must run loadDefault before running this task'
+}
+
+task start(group: ofbizServer) {
+    dependsOn 'ofbiz --start'
+    description 'Start an OFBiz instance'
+}
+
+task stop(group: ofbizServer) {
+    dependsOn 'ofbiz --shutdown'
+    description 'Stop currently running instance'
+}
+
+task terminateOfbiz(group: ofbizServer,
+    description: 'Force termination of any running OFBiz servers, only use if \"--shutdown\" command fails') << {
+    def os = System.getProperty("os.name").toLowerCase()
+    if (os.contains("windows")) {
+        Runtime.getRuntime().exec("wmic process where \"CommandLine Like \'%org.apache.ofbiz.base.start.Start%\'\" Call Terminate")
+    } else {
+        def processOutput = new ByteArrayOutputStream()
+        exec {
+            commandLine 'ps', 'ax'
+            standardOutput = processOutput
+        }
+        processOutput.toString().split(System.lineSeparator()).each { line ->
+            if(line ==~ /.*org\.apache\.ofbiz\.base\.start\.Start.*/) {
+                exec { commandLine 'kill', '-9', line.tokenize().first() }
+            }
+        }
+    }
+}
+
+task loadAdminUserLogin(group: ofbizServer) {
+    description 'Create admin user with temporary password equal to ofbiz. You must provide userLoginId'
+    createOfbizCommandTask('executeLoadAdminUser',
+        ['--load-data', 'file=/runtime/tmp/AdminUserLoginData.xml'],
+        jvmArguments, false)
+    executeLoadAdminUser.doFirst {
+        copy {
+            from ("${rootDir}/framework/resources/templates/AdminUserLoginData.xml") {
+                filter(ReplaceTokens, tokens: [userLoginId: userLoginId])
+            }
+            into "${rootDir}/runtime/tmp/"
+        }
+    }
+    dependsOn executeLoadAdminUser
+    doLast {
+        delete("${rootDir}/runtime/tmp/AdminUserLoginData.xml")
+    }
+}
+
+task loadTenant(group: ofbizServer, description: 'Load data using tenantId') {
+
+    createOfbizCommandTask('executeLoadTenant', [], jvmArguments, false)
+
+    if(project.hasProperty('tenantId')) {
+        executeLoadTenant.args '--load-data'
+        executeLoadTenant.args "delegator=default#${tenantId}"
+    }
+    if(project.hasProperty('tenantReaders')) {
+        executeLoadTenant.args '--load-data'
+        executeLoadTenant.args "readers=${tenantReaders}"
+    }
+    if(project.hasProperty('tenantComponent')) {
+        executeLoadTenant.args '--load-data'
+        executeLoadTenant.args "component=${tenantComponent}"
+    }
+
+    doLast {
+        if(!project.hasProperty('tenantId')) {
+            throw new GradleException('Missing project property tenantId')
+        }
+    }
+    dependsOn executeLoadTenant
+}
+
+task createTenant(group: ofbizServer, description: 'Create a new tenant in your environment') {
+
+    def databaseTemplateFile = "${rootDir}/framework/resources/templates/AdminNewTenantData-Derby.xml"
+
+    task prepareAndValidateTenantArguments << {
+        if(!project.hasProperty('tenantId')) {
+            throw new GradleException('Project property tenantId is missing')
+        }
+        if(!project.hasProperty('tenantName')) {
+            throw new GradleException('Project property tenantName is missing')
+        }
+        // dbPlatform values: D(Derby), M(MySQL), O(Oracle), P(PostgreSQL) (default D)
+        if(project.hasProperty('dbPlatform')) {
+            if(dbPlatform == 'D') {
+                databaseTemplateFile = "${rootDir}/framework/resources/templates/AdminNewTenantData-Derby.xml"
+            } else if(dbPlatform == 'M') {
+                databaseTemplateFile = "${rootDir}/framework/resources/templates/AdminNewTenantData-MySQL.xml"
+            } else if(dbPlatform == 'O') {
+                databaseTemplateFile = "${rootDir}/framework/resources/templates/AdminNewTenantData-Oracle.xml"
+            } else if(dbPlatform == 'P') {
+                databaseTemplateFile = "${rootDir}/framework/resources/templates/AdminNewTenantData-PostgreSQL.xml"
+            } else {
+                throw new GradleException('Invalid value for property dbPlatform: ' + "${dbPlatform}")
+            }
+        }
+    }
+
+    task generateDatabaseTemplateFile(dependsOn: prepareAndValidateTenantArguments) << {
+        def filterTokens = ['tenantId': tenantId,
+            'tenantName': tenantName,
+            'domainName': project.hasProperty('domainName')? "${domainName}":'org.apache.ofbiz',
+            'db-IP': project.hasProperty('dbIp')? "${dbIp}":'',
+            'db-User': project.hasProperty('dbUser')? "${dbUser}":'',
+            'db-Password': project.hasProperty('dbPassword')? "${dbPassword}":'']
+
+        generateFileFromTemplate(databaseTemplateFile, 'runtime/tmp',
+            filterTokens, 'tmpFilteredTenantData.xml')
+    }
+
+    task generateAdminUserTemplateFile(dependsOn: prepareAndValidateTenantArguments) << {
+        generateFileFromTemplate(
+            "${rootDir}/framework/resources/templates/AdminUserLoginData.xml",
+            'runtime/tmp',
+            ['userLoginId': "${tenantId}-admin".toString()],
+            'tmpFilteredUserLogin.xml')
+    }
+
+    // Load the tenants master database
+    createOfbizCommandTask('loadTenantOnDefaultDelegator',
+        ['--load-data', 'file=/runtime/tmp/tmpFilteredTenantData.xml'],
+        jvmArguments, false)
+    loadTenantOnDefaultDelegator.dependsOn(generateDatabaseTemplateFile, generateAdminUserTemplateFile)
+
+    // Load the actual tenant data
+    createOfbizCommandTask('loadTenantData', [], jvmArguments, false)
+    loadTenantData.dependsOn(loadTenantOnDefaultDelegator)
+
+    // Load the tenant admin user account
+    createOfbizCommandTask('loadTenantAdminUserLogin', [], jvmArguments, false)
+    loadTenantAdminUserLogin.dependsOn(loadTenantData)
+
+    /* pass arguments to tasks, must be done this way
+     * because we are in the configuration phase. We cannot
+     * set the parameters at the execution phase. */
+    if(project.hasProperty('tenantId')) {
+        loadTenantData.args '--load-data'
+        loadTenantData.args "delegator=default#${tenantId}"
+
+        loadTenantAdminUserLogin.args '--load-data'
+        loadTenantAdminUserLogin.args "delegator=default#${tenantId}"
+        loadTenantAdminUserLogin.args '--load-data'
+        loadTenantAdminUserLogin.args "file=${rootDir}/runtime/tmp/tmpFilteredUserLogin.xml"
+    }
+    if(project.hasProperty('tenantReaders')) {
+        loadTenantData.args '--load-data'
+        loadTenantData.args "readers=${tenantReaders}"
+    }
+
+    dependsOn(loadTenantAdminUserLogin)
+
+    // cleanup
+    doLast {
+        delete("${rootDir}/runtime/tmp/tmpFilteredTenantData.xml")
+        delete("${rootDir}/runtime/tmp/tmpFilteredUserLogin.xml")
+    }
+}
+
+// ========== System Administration tasks ==========
+task createComponent(group: sysadminGroup, description: 'Create the layout of an OFBiz component in the hot-deploy folder.') << {
+
+    def filterTokens = ['component-name': componentName,
+        'component-resource-name': componentResourceName,
+        'webapp-name': webappName,
+        'base-permission': basePermission]
+    def templateDir = "${rootDir}/framework/resources/templates"
+    def componentDir = "${rootDir}/hot-deploy/${componentName}"
+
+    logger.info('Creating a component with the following properties: ')
+    logger.info(" - componentName: ${componentName}")
+    logger.info(" - componentResourceName: ${componentResourceName}")
+    logger.info(" - webappName: ${webappName}")
+    logger.info(" - basePermission: ${basePermission}")
+
+    mkdir componentDir
+    mkdir componentDir+"/config"
+    mkdir componentDir+"/data"
+    mkdir componentDir+"/data/helpdata"
+    mkdir componentDir+"/dtd"
+    mkdir componentDir+"/documents"
+    mkdir componentDir+"/entitydef"
+    mkdir componentDir+"/lib"
+    mkdir componentDir+"/patches"
+    mkdir componentDir+"/patches/test"
+    mkdir componentDir+"/patches/qa"
+    mkdir componentDir+"/patches/production"
+    mkdir componentDir+"/script"
+    mkdir componentDir+"/servicedef"
+    mkdir componentDir+"/src"
+    mkdir componentDir+"/testdef"
+    mkdir componentDir+"/webapp"
+    mkdir componentDir+"/webapp/${webappName}"
+    mkdir componentDir+"/webapp/${webappName}/error"
+    mkdir componentDir+"/webapp/${webappName}/WEB-INF"
+    mkdir componentDir+"/webapp/${webappName}/WEB-INF/actions"
+    mkdir componentDir+"/widget/"
+
+    generateFileFromTemplate(templateDir+"/ofbiz-component.xml", componentDir,
+        filterTokens, "ofbiz-component.xml")
+    generateFileFromTemplate(templateDir+"/TypeData.xml", componentDir+"/data",
+        filterTokens, "${componentResourceName}TypeData.xml")
+    generateFileFromTemplate(templateDir+"/SecurityPermissionSeedData.xml", componentDir+"/data",
+        filterTokens, "${componentResourceName}SecurityPermissionSeedData.xml")
+    generateFileFromTemplate(templateDir+"/SecurityGroupDemoData.xml", componentDir+"/data",
+        filterTokens, "${componentResourceName}SecurityGroupDemoData.xml")
+    generateFileFromTemplate(templateDir+"/DemoData.xml", componentDir+"/data",
+        filterTokens, "${componentResourceName}DemoData.xml")
+    generateFileFromTemplate(templateDir+"/HELP.xml", componentDir+"/data/helpdata",
+        filterTokens, "HELP_${componentResourceName}.xml")
+    generateFileFromTemplate(templateDir+"/document.xml", componentDir+"/documents",
+        filterTokens, "${componentResourceName}.xml")
+    generateFileFromTemplate(templateDir+"/entitymodel.xml", componentDir+"/entitydef",
+        filterTokens, "entitymodel.xml")
+    generateFileFromTemplate(templateDir+"/services.xml", componentDir+"/servicedef",
+        filterTokens, "services.xml")
+    generateFileFromTemplate(templateDir+"/Tests.xml", componentDir+"/testdef",
+        filterTokens, "${componentResourceName}Tests.xml")
+    generateFileFromTemplate(templateDir+"/UiLabels.xml", componentDir+"/config",
+        filterTokens, "${componentResourceName}UiLabels.xml")
+    generateFileFromTemplate(templateDir+"/index.jsp", componentDir+"/webapp/${webappName}",
+        filterTokens, "index.jsp")
+    generateFileFromTemplate(templateDir+"/error.jsp", componentDir+"/webapp/${webappName}/error",
+        filterTokens, "error.jsp")
+    generateFileFromTemplate(templateDir+"/controller.xml", componentDir+"/webapp/${webappName}/WEB-INF",
+        filterTokens, "controller.xml")
+    generateFileFromTemplate(templateDir+"/web.xml", componentDir+"/webapp/${webappName}/WEB-INF",
+        filterTokens, "web.xml")
+    generateFileFromTemplate(templateDir+"/CommonScreens.xml", componentDir+"/widget",
+        filterTokens, "CommonScreens.xml")
+    generateFileFromTemplate(templateDir+"/Screens.xml", componentDir+"/widget",
+        filterTokens, "${componentResourceName}Screens.xml")
+    generateFileFromTemplate(templateDir+"/Menus.xml", componentDir+"/widget",
+        filterTokens, "${componentResourceName}Menus.xml")
+    generateFileFromTemplate(templateDir+"/Forms.xml", componentDir+"/widget",
+        filterTokens, "${componentResourceName}Forms.xml")
+
+    logger.info("Component successfully created in folder ${rootDir}/hot-deploy/${componentName}.")
+    logger.info("Restart OFBiz and then visit the URL: https://localhost:8443/${webappName}")
+}
+
+task createTestReports(group: sysadminGroup, description: 'Generate HTML reports from junit XML output') << {
+    ant.taskdef(name: 'junitreport',
+        classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
+        classpath: configurations.junitLibs.asPath)
+    ant.junitreport(todir: './runtime/logs/test-results') {
+        fileset(dir: './runtime/logs/test-results') {
+            include(name: '*.xml')
+        }
+        report(format:'frames', todir:'./runtime/logs/test-results/html')
+    }
+}
+/*
+ * TODO replace this code with something more declarative.
+ * We are using it so that if tests fail we still get HTML reports
+ */
+gradle.taskGraph.afterTask { Task task, TaskState state ->
+    if (task.name ==~ /^ofbiz.*--test.*/
+        || task.name ==~ /^ofbiz.*-t.*/) {
+        tasks.createTestReports.execute()
+    }
+}
+
+// ========== Clean up tasks ==========
+task cleanCatalina(group: cleanupGroup, description: 'Clean Catalina data in runtime/catalina/work') << {
+    delete "${rootDir}/runtime/catalina/work"
+}
+task cleanData(group: cleanupGroup, description: 'Clean all DB data (Derby) under runtime/data') << {
+    deleteAllInDirWithExclusions("${rootDir}/runtime/data/", ['README', 'derby.properties'])
+}
+task cleanDownloads(group: cleanupGroup, description: 'Clean all downloaded files') << {
+    delete fileTree(dir: "${rootDir}/framework/base/lib", includes: ['activemq-*.jar'])
+    delete fileTree(dir: "${rootDir}/framework/entity/lib/jdbc", includes: ['postgresql-*.jar'])
+    delete fileTree(dir: "${rootDir}/framework/entity/lib/jdbc", includes: ['mysql-*.jar'])
+}
+task cleanLogs(group: cleanupGroup, description: 'Clean all logs in runtime/logs') << {
+    deleteAllInDirWithExclusions("${rootDir}/runtime/logs/", ['README'])
+}
+task cleanOutput(group: cleanupGroup, description: 'Clean runtime/output directory') << {
+    deleteAllInDirWithExclusions("${rootDir}/runtime/output/", ['README'])
+}
+task cleanIndexes(group: cleanupGroup, description: 'Remove search indexes (e.g. Lucene) from runtime/indexes') << {
+    deleteAllInDirWithExclusions("${rootDir}/runtime/indexes/", ['README', 'index.properties'])
+}
+task cleanTempfiles(group: cleanupGroup, description: 'Remove file in runtime/tempfiles') << {
+    deleteAllInDirWithExclusions("${rootDir}/runtime/tempfiles/", ['README'])
+    deleteAllInDirWithExclusions("${rootDir}/runtime/tmp/", ['README'])
+}
+task cleanUploads(group: cleanupGroup, description: 'Remove uploaded files.') << {
+    deleteAllInDirWithExclusions("${rootDir}/runtime/uploads/", [])
+}
+task cleanXtra(group: cleanupGroup, description: 'Clean extra generated files like .rej, .DS_Store, etc.') << {
+    delete fileTree(dir: "${rootDir}", includes: ['**/.nbattrs', '**/*~','**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig'])
+}
+task cleanGradle(group: cleanupGroup, description: 'clean generated files from Gradle') << {
+    delete file("${rootDir}/.gradle")
+}
+task cleanAnt(group: cleanupGroup, type: Delete, description: "clean old artifacts generated by Ant") {
+    /* TODO this task is temporary and should be deleted after some
+     * time when users have updated their trees. */
+    ['framework', 'specialpurpose', 'applications'].each { componentGroup ->
+        file(componentGroup).eachDir { component ->
+            delete file(component.toString() + '/build')
+        }
+    }
+    delete 'ofbiz.jar'
+}
+
+//  Keep this task below all other clean tasks  The location of
+//  declaration is important because it means that it will automatically
+//  run whenever the task cleanAll executes (dependency matched by regex)
+def cleanTasks = getTasksMatchingRegex(/^clean.+/)
+task cleanAll(group: cleanupGroup, dependsOn: [cleanTasks, clean]) {
+    description 'Execute all cleaning tasks.'
+}
+
+// ========== Tasks for OFBiz committers ==========
+def websiteDir = "${rootDir}/../site"
+task copyDtds(group: committerGroup, description: 'Copy all DTDs from OFBiz instance to website') << {
+    mkdir websiteDir+'/dtds'
+    copy {
+        from(fileTree("${rootDir}").files) {
+            include '**/*.xsd'
+            exclude '**/002*.xsd'
+            exclude '**/068*.xsd'
+            exclude '**/161*.xsd'
+            exclude '**/196*.xsd'
+            exclude '**/197*.xsd'
+        }
+        into websiteDir+'/dtds'
+    }
+}
+
+task gitInfoFooter(group: committerGroup, description: 'Update the Git Branch-revision info in the footer') << {
+    def branch
+    def revision
+    def timestamp = new Date().format 'yyyy-MM-dd HH:mm:ss'
+    File gitFooterFile = new File("${rootDir}/runtime/GitInfo.ftl")
+
+    def branchOutput = new ByteArrayOutputStream()
+    exec{
+        commandLine 'git', 'rev-parse', '--abbrev-ref', 'HEAD'
+        standardOutput = branchOutput
+    }
+    branch = branchOutput.toString()
+    def revisionOutput = new ByteArrayOutputStream()
+    exec{
+        commandLine 'git', 'rev-parse', 'HEAD'
+        standardOutput = revisionOutput
+    }
+    revision = revisionOutput.toString()
+    gitFooterFile.delete()
+    gitFooterFile.createNewFile()
+    gitFooterFile << "Branch: ${branch}"
+    gitFooterFile << "Revision: ${revision}"
+    gitFooterFile << "Built on: ${timestamp}" + System.lineSeparator()
+    gitFooterFile << "Java Version: ${org.gradle.internal.jvm.Jvm.current()}"
+}
+
+task svnInfoFooter(group: committerGroup, description: 'Update the Subversion revision info in the footer') << {
+    def timestamp = new Date().format 'yyyy-MM-dd HH:mm:ss'
+    File svnFooterFile = new File("${rootDir}/runtime/SvnInfo.ftl")
+    def svnOutput = new ByteArrayOutputStream()
+    exec{
+        commandLine 'svn', 'info', '--xml'
+        standardOutput = svnOutput
+    }
+    def info = new XmlParser().parseText(svnOutput.toString())
+    svnFooterFile.delete()
+    svnFooterFile.createNewFile()
+    svnFooterFile << "Branch: ${info.entry.url.text()}" + System.lineSeparator()
+    svnFooterFile << "Revision: ${info.entry.commit.@revision}" + System.lineSeparator()
+    svnFooterFile << "Built on: ${timestamp}" + System.lineSeparator()
+    svnFooterFile << "Java Version: ${org.gradle.internal.jvm.Jvm.current()}"
+}
+
+// ========== hidden support tasks ==========
+
+/* without executing this task, a test would fail that is named
+ * org.apache.ofbiz.base.util.test.UtilObjectTests.testGetObjectFromFactory()
+ *
+ * The test fails because it requires defining a service provider, read more below.
+ * http://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#Service_Provider
+ */
+task createBaseTestServiceProviderJar << {
+    ant.jar(destfile: "${rootDir}/build/libs/ofbiz-base-test.jar") {
+        service(type: 'org.apache.ofbiz.base.util.test.UtilObjectTests$TestFactoryIntf') {
+            provider(classname: 'org.apache.ofbiz.base.util.test.UtilObjectTests$FirstTestFactory')
+            provider(classname: 'org.apache.ofbiz.base.util.test.UtilObjectTests$SecondTestFactory')
+        }
+    }
+}
+classes.dependsOn createBaseTestServiceProviderJar
+
+/* ========================================================
+ * Rules-based OFBiz server commands
+ * ======================================================== */
+
+tasks.addRule('Pattern: ofbiz <Commands>: Execute OFBiz startup commands') { String taskName ->
+    if(taskName ==~ /^ofbiz\s.*/ || taskName == 'ofbiz') {
+        def arguments = (taskName - 'ofbiz').toLowerCase().tokenize(' ')
+        createOfbizCommandTask(taskName, arguments, jvmArguments, false)
+    }
+}
+
+tasks.addRule('Pattern: ofbizDebug <Commands>: Execute OFBiz startup commands in remote debug mode') { String taskName ->
+    if(taskName ==~ /^ofbizDebug\s.*/ || taskName == 'ofbizDebug') {
+        def arguments = (taskName - 'ofbizDebug').toLowerCase().tokenize(' ')
+        createOfbizCommandTask(taskName, arguments, jvmArguments, true)
+    }
+}
+
+tasks.addRule('Pattern: ofbizSecure <Commands>: Execute OFBiz startup commands pre-loading the notsoserial Java agent') { String taskName ->
+    if(taskName ==~ /^ofbizSecure\s.*/ || taskName == 'ofbizSecure') {
+        def arguments = (taskName - 'ofbizSecure').toLowerCase().tokenize(' ')
+        jvmArguments.add('-server')
+        jvmArguments.add("-javaagent:${rootDir}/tools/security/notsoserial/notsoserial-1.0-SNAPSHOT.jar")
+        jvmArguments.add("-Dnotsoserial.whitelist=${rootDir}/tools/security/notsoserial/empty.txt")
+        jvmArguments.add("-Dnotsoserial.dryrun=${rootDir}/tools/security/notsoserial/is-deserialized.txt")
+        jvmArguments.add("-Dnotsoserial.trace=${rootDir}/tools/security/notsoserial/deserialize-trace.txt")
+        createOfbizCommandTask(taskName, arguments, jvmArguments, false)
+    }
+}
+
+tasks.addRule('Pattern: ofbizBackground <Commands>: Execute OFBiz startup commands in background and output to console.log') { String taskName ->
+    if(taskName ==~ /^ofbizBackground\s.*/ || taskName == 'ofbizBackground') {
+        createOfbizBackgroundCommandTask(taskName)
+    }
+}
+
+tasks.addRule('Pattern: ofbizBackgroundSecure <Commands>: Execute OFBiz startup commands in background (secure mode) and output to console.log') { String taskName ->
+    if(taskName ==~ /^ofbizBackgroundSecure\s.*/ || taskName == 'ofbizBackgroundSecure') {
+        createOfbizBackgroundCommandTask(taskName)
+    }
+}
+
+/* ========================================================
+ * Helper Functions
+ * ======================================================== */
+
+def createOfbizCommandTask(taskName, arguments, jvmArguments, isDebugMode) {
+
+    def ofbizJarName = buildDir.toString()+'/libs/'+project.name+'.jar'
+
+    task(type: JavaExec, dependsOn: build, taskName) {
+        jvmArgs(jvmArguments)
+        debug = isDebugMode
+        classpath = files(ofbizJarName)
+        main = ofbizMainClass
+        arguments.each { argument ->
+            args argument
+        }
+    }
+}
+
+def createOfbizBackgroundCommandTask(taskName) {
+    def os = System.getProperty("os.name").toLowerCase()
+    def sourceTask = taskName.tokenize().first()
+    def arguments = (taskName - sourceTask)
+
+    def targetTask
+    def gradleRunner
+
+    if(sourceTask == 'ofbizBackground') {
+        targetTask = 'ofbiz'
+    } else if(sourceTask == 'ofbizBackgroundSecure') {
+        targetTask = 'ofbizSecure'
+    }
+
+    if (os.contains("windows")) {
+        gradleRunner = 'gradlew.bat'
+    } else {
+        gradleRunner = './gradlew'
+    }
+
+    task (taskName) {
+        doLast {
+            spawnProcess(gradleRunner, "${targetTask} ${arguments}")
+        }
+    }
+}
+
+def spawnProcess(command, arguments) {
+    ProcessBuilder pb = new ProcessBuilder(command, arguments)
+    File consoleLog = file("${rootDir}/runtime/logs/console.log");
+
+    pb.directory(file("${rootDir}"))
+    pb.redirectErrorStream(true)
+    pb.redirectOutput(ProcessBuilder.Redirect.appendTo(consoleLog))
+    pb.start()
+}
+
+def getDirectoryInActiveComponentsIfExists(String dirName) {
+    def dirInComponents = []
+    iterateOverActiveComponents { component ->
+        def subDir = file(component.toString() + '/' + dirName)
+        if(subDir.exists()) {
+            dirInComponents.add subDir
+        }
+    }
+    return dirInComponents
+}
+
+def deleteAllInDirWithExclusions(dirName, exclusions) {
+    ant.delete (includeEmptyDirs: 'true', verbose: 'on') {
+        fileset(dir: dirName, includes: '**/*', erroronmissingdir: "false") {
+            exclusions.each { exclusion ->
+                exclude name: exclusion
+            }
+        }
+    }
+}
+
+def getTasksMatchingRegex(theRegex) {
+    def filteredTasks = []
+    tasks.each { task ->
+        if(task.name ==~ theRegex) {
+            filteredTasks.add(task)
+        }
+    }
+    return filteredTasks
+}
+
+def generateFileFromTemplate(templateFileInFullPath, targetDirectory, filterTokens, newFileName) {
+    copy {
+        from (templateFileInFullPath) {
+            filter ReplaceTokens, tokens: filterTokens
+            rename templateFileInFullPath.tokenize('/').last(), newFileName
+        }
+        into targetDirectory
+    }
+}
+
+def getJarManifestClasspathForCurrentOs() {
+    def osClassPath = ''
+    if(System.getProperty('os.name').toLowerCase().contains('windows')) {
+        configurations.runtime.files.each { cpEntry ->
+            osClassPath += '\\' + cpEntry.toString() + ' '
+        }
+    } else {
+        osClassPath = configurations.runtime.files.collect { "$it" }.join(' ')
+    }
+    return osClassPath
+}
